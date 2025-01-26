@@ -1,5 +1,3 @@
-const LOCALE = "en-CH";
-
 const UNITS = {
   year: 24 * 60 * 60 * 1000 * 365,
   month: (24 * 60 * 60 * 1000 * 365) / 12,
@@ -8,14 +6,16 @@ const UNITS = {
   minute: 60 * 1000,
   second: 1000,
 };
-const RTF = new Intl.RelativeTimeFormat(LOCALE);
+
+let config;
+let rtf;
 
 function getRelativeTime(d1, d2 = new Date()) {
   const elapsed = d1 - d2;
 
   for (const u in UNITS) {
     if (Math.abs(elapsed) > UNITS[u] || u == "second") {
-      return RTF.format(Math.round(elapsed / UNITS[u]), u);
+      return rtf.format(Math.round(elapsed / UNITS[u]), u);
     }
   }
 }
@@ -26,7 +26,7 @@ function replaceDates() {
     const dateIso = element.getAttribute("datetime");
 
     const date = new Date(dateIso);
-    const dateStr = date.toLocaleString("fr-CH", {
+    const dateStr = date.toLocaleString(config.locale, {
       year: "2-digit",
       month: "2-digit",
       day: "2-digit",
@@ -42,16 +42,27 @@ function replaceDates() {
   }
 }
 
-window.navigation.addEventListener("navigate", (event) => {
-  replaceDates();
-});
+function init() {
+  window.navigation.addEventListener("navigate", (event) => {
+    replaceDates();
+  });
 
-const mutationObserver = new MutationObserver((mutations) => {
-  replaceDates();
-});
-mutationObserver.observe(document.body, {
-  subtree: true,
-  childList: true,
-});
+  const mutationObserver = new MutationObserver((mutations) => {
+    replaceDates();
+  });
+  mutationObserver.observe(document.body, {
+    subtree: true,
+    childList: true,
+  });
 
-replaceDates();
+  replaceDates();
+}
+
+chrome.storage.sync.get({ locale: "en-CH", enabled: true }, (c) => {
+  console.log("config", c);
+  config = c;
+  rtf = new Intl.RelativeTimeFormat(config.locale);
+  if (config.enabled) {
+    init();
+  }
+});

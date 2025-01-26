@@ -17,8 +17,14 @@
                 "scripts/content.js"
             ],
             "matches": [
-                "*://*/*"
+                "*://github.com/*"
             ]
         }
+    ],
+    "host_permissions": [
+        "*://github.com/*"
+    ],
+    "permissions": [
+        "storage"
     ]
 }

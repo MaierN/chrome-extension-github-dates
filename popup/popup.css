@@ -1,0 +1,8 @@
+#content {
+  white-space: nowrap;
+  margin-bottom: 12px;
+}
+
+*:focus {
+  box-shadow: none !important;
+}
