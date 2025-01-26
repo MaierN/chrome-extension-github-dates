@@ -34,13 +34,11 @@ function replaceDates() {
       minute: "2-digit",
     });
 
-    // const newElement = document.createElement("span");
-    // newElement.textContent = dateStr;
-    // newElement.title = getRelativeTime(date) + "\n" + dateIso;
-    // element.replaceWith(newElement);
-
-    element.shadowRoot.innerHTML = dateStr;
-    element.title = getRelativeTime(date) + "\n" + dateIso;
+    const newElement = document.createElement("span");
+    newElement.textContent = dateStr;
+    newElement.title = getRelativeTime(date) + "\n" + dateIso;
+    newElement.classList = element.classList;
+    element.replaceWith(newElement);
   }
 }
 
