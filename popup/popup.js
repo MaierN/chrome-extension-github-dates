@@ -1,6 +1,7 @@
 const configForm = document.getElementById("configForm");
 
 const configEnabled = document.getElementById("configEnabled");
+const configEnabledLabel = document.getElementById("configEnabledLabel");
 const configLocale = document.getElementById("configLocale");
 
 function forEachTab(cb) {
@@ -30,12 +31,19 @@ function sendToTabs(message) {
   });
 }
 
+function updateEnabledLabel(enabled) {
+  const text = enabled ? "Enabled" : "Disabled";
+  configEnabledLabel.textContent = text;
+}
+
 chrome.storage.sync.get({ locale: "en-CH", enabled: true }, (config) => {
   configEnabled.checked = config.enabled;
+  updateEnabledLabel(config.enabled);
   configLocale.value = config.locale;
 
   configEnabled.addEventListener("input", () => {
     chrome.storage.sync.set({ enabled: configEnabled.checked }).then(() => {
+      updateEnabledLabel(configEnabled.checked);
       reloadTabs();
     });
   });
