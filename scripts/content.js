@@ -1,3 +1,6 @@
+const DEFAULT_LOCALE = "en-CH";
+const EXT_TOKEN = "chrome-extension-github-dates";
+
 const UNITS = {
   year: 24 * 60 * 60 * 1000 * 365,
   month: (24 * 60 * 60 * 1000 * 365) / 12,
@@ -20,9 +23,8 @@ function getRelativeTime(d1, d2 = new Date()) {
   }
 }
 
-function replaceDates() {
-  const res = document.querySelectorAll("relative-time");
-  for (let element of res) {
+function replaceDates(elements) {
+  for (let element of elements) {
     const dateIso = element.getAttribute("datetime");
 
     const date = new Date(dateIso);
@@ -35,33 +37,70 @@ function replaceDates() {
     });
 
     const newElement = document.createElement("span");
+    newElement.setAttribute("datetime", dateIso);
     newElement.textContent = dateStr;
     newElement.title = getRelativeTime(date) + "\n" + dateIso;
     newElement.classList = element.classList;
+    if (!newElement.classList.contains(EXT_TOKEN)) {
+      newElement.classList.add(EXT_TOKEN);
+    }
+    newElement.style.whiteSpace = "nowrap";
     element.replaceWith(newElement);
   }
 }
 
+function replaceDatesOrig() {
+  const res = document.querySelectorAll("relative-time");
+  replaceDates(res);
+}
+
+function updateDates() {
+  const res = document.querySelectorAll(`.${EXT_TOKEN}`);
+  replaceDates(res);
+}
+
 function init() {
   window.navigation.addEventListener("navigate", (event) => {
-    replaceDates();
+    replaceDatesOrig();
   });
 
   const mutationObserver = new MutationObserver((mutations) => {
-    replaceDates();
+    replaceDatesOrig();
   });
   mutationObserver.observe(document.body, {
     subtree: true,
     childList: true,
   });
 
-  replaceDates();
+  replaceDatesOrig();
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type == "updateConfig") {
+      readConfig(() => {
+        updateDates();
+      });
+    }
+  });
 }
 
-chrome.storage.sync.get({ locale: "en-CH", enabled: true }, (c) => {
-  console.log("config", c);
-  config = c;
-  rtf = new Intl.RelativeTimeFormat(config.locale);
+function readConfig(cb) {
+  chrome.storage.sync.get({ locale: DEFAULT_LOCALE, enabled: true }, (c) => {
+    config = c;
+    try {
+      rtf = new Intl.RelativeTimeFormat(config.locale);
+    } catch (e) {
+      console.log(`${EXT_TOKEN}: fallback to ${DEFAULT_LOCALE}`);
+      config.locale = DEFAULT_LOCALE;
+      rtf = new Intl.RelativeTimeFormat(config.locale);
+    }
+
+    if (cb) {
+      cb();
+    }
+  });
+}
+
+readConfig(() => {
   if (config.enabled) {
     init();
   }
