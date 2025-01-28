@@ -3,6 +3,7 @@ const configForm = document.getElementById("configForm");
 const configEnabled = document.getElementById("configEnabled");
 const configEnabledLabel = document.getElementById("configEnabledLabel");
 const configLocale = document.getElementById("configLocale");
+const configEnableColors = document.getElementById("configEnableColors");
 
 function forEachTab(cb) {
   chrome.tabs.query(
@@ -31,27 +32,49 @@ function sendToTabs(message) {
   });
 }
 
+function updateConfigTab() {
+  sendToTabs({ type: "updateConfig" });
+}
+
 function updateEnabledLabel(enabled) {
   const text = enabled ? "Enabled" : "Disabled";
   configEnabledLabel.textContent = text;
 }
 
-chrome.storage.sync.get({ locale: "en-CH", enabled: true }, (config) => {
-  configEnabled.checked = config.enabled;
-  updateEnabledLabel(config.enabled);
-  configLocale.value = config.locale;
+function updateEnableColorsLabel(enabled) {
+  const text = enabled ? "Colors enabled" : "Colors disabled";
+  configEnableColorsLabel.textContent = text;
+}
 
-  configEnabled.addEventListener("input", () => {
-    chrome.storage.sync.set({ enabled: configEnabled.checked }).then(() => {
-      updateEnabledLabel(configEnabled.checked);
-      reloadTabs();
-    });
-  });
-  configLocale.addEventListener("input", () => {
-    chrome.storage.sync.set({ locale: configLocale.value }).then(() => {
-      sendToTabs({ type: "updateConfig" });
-    });
-  });
+chrome.storage.sync.get(
+  { locale: "en-CH", enabled: true, enableColors: true },
+  (config) => {
+    configEnabled.checked = config.enabled;
+    updateEnabledLabel(config.enabled);
+    configLocale.value = config.locale;
+    configEnableColors.checked = config.enableColors;
+    updateEnableColorsLabel(config.enableColors);
 
-  configForm.style.display = "initial";
-});
+    configEnabled.addEventListener("input", () => {
+      chrome.storage.sync.set({ enabled: configEnabled.checked }).then(() => {
+        updateEnabledLabel(configEnabled.checked);
+        reloadTabs();
+      });
+    });
+    configLocale.addEventListener("input", () => {
+      chrome.storage.sync.set({ locale: configLocale.value }).then(() => {
+        updateConfigTab();
+      });
+    });
+    configEnableColors.addEventListener("input", () => {
+      chrome.storage.sync
+        .set({ enableColors: configEnableColors.checked })
+        .then(() => {
+          updateEnableColorsLabel(configEnableColors.checked);
+          updateConfigTab();
+        });
+    });
+
+    configForm.style.display = "initial";
+  }
+);

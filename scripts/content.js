@@ -84,20 +84,23 @@ function init() {
 }
 
 function readConfig(cb) {
-  chrome.storage.sync.get({ locale: DEFAULT_LOCALE, enabled: true }, (c) => {
-    config = c;
-    try {
-      rtf = new Intl.RelativeTimeFormat(config.locale);
-    } catch (e) {
-      console.log(`${EXT_TOKEN}: fallback to ${DEFAULT_LOCALE}`);
-      config.locale = DEFAULT_LOCALE;
-      rtf = new Intl.RelativeTimeFormat(config.locale);
-    }
+  chrome.storage.sync.get(
+    { enabled: true, locale: DEFAULT_LOCALE, enableColors: true },
+    (c) => {
+      config = c;
+      try {
+        rtf = new Intl.RelativeTimeFormat(config.locale);
+      } catch (e) {
+        console.log(`${EXT_TOKEN}: fallback to ${DEFAULT_LOCALE}`);
+        config.locale = DEFAULT_LOCALE;
+        rtf = new Intl.RelativeTimeFormat(config.locale);
+      }
 
-    if (cb) {
-      cb();
+      if (cb) {
+        cb();
+      }
     }
-  });
+  );
 }
 
 readConfig(() => {
