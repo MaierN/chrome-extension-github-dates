@@ -10,6 +10,17 @@ const UNITS = {
   second: 1000,
 };
 
+const COLOR_NEAR = 7 * UNITS.day;
+const COLOR_FAR_START = UNITS.year / 2;
+const COLOR_FAR_END = UNITS.year;
+
+const BASE_HUE = 211.43;
+const BASE_SATURATION = 10.55;
+const BASE_LIGHTNESS = 39.02;
+const MAX_SATURATION = 50;
+const HUE_RECENT = 120;
+const HUE_OLD = 0;
+
 let config;
 let rtf;
 
@@ -21,6 +32,18 @@ function getRelativeTime(d1, d2 = new Date()) {
       return rtf.format(Math.round(elapsed / UNITS[u]), u);
     }
   }
+}
+
+function mapRange(inMin, inMax, outMin, outMax, value) {
+  const alpha = (value - inMin) / (inMax - inMin);
+  const mapped = alpha * (outMax - outMin) + outMin;
+  if (outMax < outMin) {
+    const tmp = outMax;
+    outMax = outMin;
+    outMin = tmp;
+  }
+  const clamped = Math.max(outMin, Math.min(outMax, mapped));
+  return clamped;
 }
 
 function replaceDates(elements) {
@@ -35,16 +58,50 @@ function replaceDates(elements) {
       hour: "2-digit",
       minute: "2-digit",
     });
+    const now = new Date();
 
     const newElement = document.createElement("span");
+
     newElement.setAttribute("datetime", dateIso);
     newElement.textContent = dateStr;
-    newElement.title = getRelativeTime(date) + "\n" + dateIso;
+    newElement.title = getRelativeTime(date, now) + "\n" + dateIso;
+
     newElement.classList = element.classList;
     if (!newElement.classList.contains(EXT_TOKEN)) {
       newElement.classList.add(EXT_TOKEN);
     }
     newElement.style.whiteSpace = "nowrap";
+
+    if (config.enableColors) {
+      const elapsedMs = now - date;
+
+      let hue = BASE_HUE;
+      let saturation = BASE_SATURATION;
+      let lightness = BASE_LIGHTNESS;
+
+      if (elapsedMs < COLOR_NEAR) {
+        hue = HUE_RECENT;
+        saturation = mapRange(
+          0,
+          COLOR_NEAR,
+          MAX_SATURATION,
+          BASE_SATURATION,
+          elapsedMs
+        );
+      } else if (elapsedMs > COLOR_FAR_START) {
+        hue = HUE_OLD;
+        saturation = mapRange(
+          COLOR_FAR_START,
+          COLOR_FAR_END,
+          BASE_SATURATION,
+          MAX_SATURATION,
+          elapsedMs
+        );
+      }
+
+      newElement.style.color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
     element.replaceWith(newElement);
   }
 }
