@@ -1,12 +1,11 @@
 {
-  "name": "chrome-hello-world",
-  "version": "1.0.0",
-  "main": "",
-  "scripts": {},
-  "author": "",
-  "license": "",
-  "description": "",
-  "dependencies": {
-    "chrome-types": "^0.1.334"
+  "type": "module",
+  "scripts": {
+    "build": "node buildZip.js"
+  },
+  "devDependencies": {
+    "archiver": "^7.0.1",
+    "chrome-types": "^0.1.334",
+    "prettier": "^3.4.2"
   }
 }
