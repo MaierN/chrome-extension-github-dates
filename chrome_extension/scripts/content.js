@@ -9,10 +9,6 @@ const UNITS = {
   second: 1000,
 };
 
-const COLOR_NEAR = 7 * UNITS.day;
-const COLOR_FAR_START = UNITS.year / 2;
-const COLOR_FAR_END = UNITS.year;
-
 const BASE_HUE = 211.43;
 const BASE_SATURATION = 10.55;
 const BASE_LIGHTNESS = 39.02;
@@ -78,20 +74,20 @@ function replaceDates(elements) {
       let saturation = BASE_SATURATION;
       let lightness = BASE_LIGHTNESS;
 
-      if (elapsedMs < COLOR_NEAR) {
+      if (elapsedMs < config.greenThreshold * UNITS.day) {
         hue = HUE_RECENT;
         saturation = mapRange(
           0,
-          COLOR_NEAR,
+          config.greenThreshold * UNITS.day,
           MAX_SATURATION,
           BASE_SATURATION,
           elapsedMs
         );
-      } else if (elapsedMs > COLOR_FAR_START) {
+      } else if (elapsedMs > config.grayThreshold * UNITS.day) {
         hue = HUE_OLD;
         saturation = mapRange(
-          COLOR_FAR_START,
-          COLOR_FAR_END,
+          config.grayThreshold * UNITS.day,
+          config.grayThreshold * UNITS.day * 2,
           BASE_SATURATION,
           MAX_SATURATION,
           elapsedMs
@@ -141,7 +137,7 @@ function init() {
 
 function readConfig(cb) {
   chrome.storage.sync.get(
-    DEFAULT_CONFIG,
+    DEFAULT_CONFIG, // set in config.js
     (c) => {
       config = c;
       try {

@@ -4,6 +4,8 @@ const configEnabled = document.getElementById("configEnabled");
 const configEnabledLabel = document.getElementById("configEnabledLabel");
 const configLocale = document.getElementById("configLocale");
 const configEnableColors = document.getElementById("configEnableColors");
+const configGreenThreshold = document.getElementById("configGreenThreshold");
+const configGrayThreshold = document.getElementById("configGrayThreshold");
 
 function forEachTab(cb) {
   chrome.tabs.query(
@@ -44,6 +46,10 @@ function updateEnabledLabel(enabled) {
 function updateEnableColorsLabel(enabled) {
   const text = enabled ? "Colors enabled" : "Colors disabled";
   configEnableColorsLabel.textContent = text;
+
+  const colorConfigStyle = enabled ? "display: block;" : "display: none;";
+  configGreenThreshold.parentElement.style = colorConfigStyle;
+  configGrayThreshold.parentElement.style = colorConfigStyle;
 }
 
 chrome.storage.sync.get(
@@ -54,6 +60,8 @@ chrome.storage.sync.get(
     configLocale.value = config.locale;
     configEnableColors.checked = config.enableColors;
     updateEnableColorsLabel(config.enableColors);
+    configGreenThreshold.value = config.greenThreshold;
+    configGrayThreshold.value = config.grayThreshold;
 
     configEnabled.addEventListener("input", () => {
       chrome.storage.sync.set({ enabled: configEnabled.checked }).then(() => {
@@ -71,6 +79,20 @@ chrome.storage.sync.get(
         .set({ enableColors: configEnableColors.checked })
         .then(() => {
           updateEnableColorsLabel(configEnableColors.checked);
+          updateConfigTab();
+        });
+    });
+    configGreenThreshold.addEventListener("input", () => {
+      chrome.storage.sync
+        .set({ greenThreshold: parseInt(configGreenThreshold.value) })
+        .then(() => {
+          updateConfigTab();
+        });
+    });
+    configGrayThreshold.addEventListener("input", () => {
+      chrome.storage.sync
+        .set({ grayThreshold: parseInt(configGrayThreshold.value) })
+        .then(() => {
           updateConfigTab();
         });
     });
