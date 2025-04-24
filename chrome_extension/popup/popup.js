@@ -47,7 +47,7 @@ function updateEnableColorsLabel(enabled) {
 }
 
 chrome.storage.sync.get(
-  { locale: "en-CH", enabled: true, enableColors: true },
+  DEFAULT_CONFIG, // set in config.js
   (config) => {
     configEnabled.checked = config.enabled;
     updateEnabledLabel(config.enabled);

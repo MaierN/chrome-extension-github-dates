@@ -14,6 +14,7 @@
     "content_scripts": [
         {
             "js": [
+                "common/config.js",
                 "scripts/content.js"
             ],
             "matches": [

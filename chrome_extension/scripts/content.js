@@ -1,4 +1,3 @@
-const DEFAULT_LOCALE = "en-CH";
 const EXT_TOKEN = "chrome-extension-github-dates";
 
 const UNITS = {
@@ -142,14 +141,14 @@ function init() {
 
 function readConfig(cb) {
   chrome.storage.sync.get(
-    { enabled: true, locale: DEFAULT_LOCALE, enableColors: true },
+    DEFAULT_CONFIG,
     (c) => {
       config = c;
       try {
         rtf = new Intl.RelativeTimeFormat(config.locale);
       } catch (e) {
-        console.log(`${EXT_TOKEN}: fallback to ${DEFAULT_LOCALE}`);
-        config.locale = DEFAULT_LOCALE;
+        console.log(`${EXT_TOKEN}: fallback to ${DEFAULT_CONFIG.locale}`);
+        config.locale = DEFAULT_CONFIG.locale;
         rtf = new Intl.RelativeTimeFormat(config.locale);
       }
 
