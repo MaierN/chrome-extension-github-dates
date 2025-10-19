@@ -112,14 +112,17 @@ function updateDates() {
 }
 
 function init() {
-  window.navigation.addEventListener("navigate", (event) => {
-    replaceDatesOrig();
-  });
+  // not available in firefox (see https://bugzilla.mozilla.org/show_bug.cgi?id=1777171)
+  if (window.navigation) {
+    window.navigation.addEventListener("navigate", (event) => {
+      replaceDatesOrig();
+    });
+  }
 
-  const mutationObserver = new MutationObserver((mutations) => {
+  const mutationObserver = new MutationObserver(() => {
     replaceDatesOrig();
   });
-  mutationObserver.observe(document.body, {
+  mutationObserver.observe(document.documentElement, {
     subtree: true,
     childList: true,
   });
